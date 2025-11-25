@@ -1,0 +1,88 @@
+Categoría,Sistema volcanico,Region,Latitud,Longitud,Total Factores de Peligro,Total Factores de Exposicion,Total Riesgo Especifico
+1,Villarrica,La Araucanía y Los Ríos,-39.42,-71.939,23,23.7,545.7
+1,Calbuco,Los Lagos,-41.329,-72.614,23,22,506.2
+1,Llaima,La Araucanía,-38.694,-71.733,22.5,21.6,485.1
+1,Puyehue - Cordón Caulle,Los Ríos y Los Lagos,-40.585,-72.112,21,20.1,422.2
+1,Grupo Descabezados,Maule,-35.654,-70.759,21.5,19.2,412.9
+1,Carrán - Los Venados,Los Ríos,-40.366,-72.073,18.5,21.4,396.1
+1,Chaitén,Los Lagos,-42.837,-72.65,19.5,20.2,393
+1,Osorno,Los Lagos,-41.102,-72.499,20.5,19,389.3
+1,Mocho - Choshuenco,Los Ríos,-39.93,-72.03,19,20.3,385.7
+1,Nevados de Chillán,Ñuble,-36.871,-71.368,20,17.9,358.6
+1,Lonquimay,La Araucanía,-38.379,-71.589,17.5,19.5,342
+1,Hudson,Aysén,-45.9,-72.97,20.5,16.3,333.7
+1,Antuco,Biobío,-37.41,-71.351,19,16.2,307.7
+1,Láscar,Antofagasta,-23.363,-67.731,17,14.7,249.7
+2,Copahue,Biobío,-37.85,-71.17,17,16.5,281.1
+2,Antillanca,Los Lagos,-40.776,-72.155,16,17.5,280.3
+2,Parinacota,Arica y Parinacota,-18.164,-69.143,18,15.4,276.8
+2,Callaqui,Biobío,-37.926,-71.446,15,17.6,264.1
+2,Michinmahuida,Los Lagos,-42.798,-72.445,14.5,17.8,258.4
+2,Yate,Los Lagos,-41.759,-72.4,13,19.9,258.1
+2,Sollipulli,La Araucanía,-38.977,-71.519,13.5,18.8,253.4
+2,Planchón - Peteroa,Maule,-35.241,-70.574,17,14.4,245.2
+2,Laguna del Maule,Maule,-36.058,-70.507,16.5,14,231.2
+2,Puntiagudo - Cordón Cenizos,Los Lagos,-40.973,-72.269,12.5,17.9,224.3
+2,Guallatiri,Arica y Parinacota,-18.423,-69.089,15.5,13.7,213
+2,Quetrupillán,La Araucanía y Los Ríos,-39.498,-71.717,11,19,209.1
+2,Lanín,La Araucanía,-39.639,-71.501,14.5,14.4,208.4
+2,Melimoyu,Aysén,-44.072,-72.868,13,15.7,204.3
+2,Hornopirén,Los Lagos,-41.876,-72.431,11,18.3,201.1
+2,Apagado o Hualaihué,Los Lagos,-41.884,-72.589,10.5,18.3,192.1
+2,Tupungatito,Metropolitana,-33.401,-69.802,14,12.6,176.7
+3,Monte Burney,Magallanes y Antártica Chilena,-52.326,-73.379,15,12.2,183
+3,Cayutué - Ralún - Viguería,Los Lagos,-41.253,-72.28,10.5,17,178
+3,Reclus,Magallanes y Antártica Chilena,-50.96,-73.58,13,13.7,177.7
+3,Mentolat,Aysén,-44.695,-73.079,11.5,14.9,171.2
+3,San Pedro,Antofagasta,-21.888,-68.391,11,15.4,169.6
+3,Tolhuaca,La Araucanía,-38.314,-71.646,10,16.9,168.6
+3,Yanteles,Los Lagos,-43.5,-72.814,11.5,14.3,164.5
+3,Macá,Aysén,-45.104,-73.164,11,14,154
+3,Grupo Aysén,Aysén,-45.371,-73.076,10.5,14.6,153.2
+3,Isluga,Tarapacá,-19.155,-68.82,10,15.3,153
+3,Taapaca,Arica y Parinacota,-18.112,-69.509,9,17,152.6
+3,Grupo Caburgua,La Araucanía,-39.265,-71.729,8,18.8,150.1
+3,Grupo Alto Palena,Los Lagos,-43.65,-72.35,9.5,15.5,146.8
+3,Irruputuncu,Tarapacá,-20.732,-68.56,9,16.1,144.5
+3,Isla Decepción,Magallanes y Antártica Chilena,-62.959,-60.637,18,8,144
+3,Huequi,Los Lagos,-42.379,-72.579,9.5,15.1,143.9
+3,Socompa,Antofagasta,-24.396,-68.246,11,13.1,143.6
+3,San José,Metropolitana,-33.79,-69.894,9,15.9,143.3
+3,Tinguiririca,O'Higgins,-34.817,-70.34,11,13,143.3
+3,Fui,Los Ríos,-39.901,-71.928,8,17.7,141.6
+3,Maipo,Metropolitana,-34.166,-69.828,12,9.5,114.4
+3,Isla de Pascua,Valparaíso,-27.114,-109.367,7,14.7,103.2
+3,Lautaro,Magallanes y Antártica Chilena,-49.02,-73.506,9,6.6,59
+4,Tatara - San Pedro,Maule,-35.992,-70.855,9,14.5,130.9
+4,Nevado de Longaví,Maule,-36.199,-71.164,9,13.7,123.7
+4,Corcovado,Los Lagos,-43.194,-72.794,11,11.2,123
+4,Barranco Colorado,Los Lagos,-42.399,-72.482,9,13.7,122.9
+4,Puyuhuapi,Aysén,-44.3,-72.534,7,15.5,108.4
+4,Tacora,Arica y Parinacota,-17.721,-69.773,8,13.1,104.6
+4,Olca - Paruma,Antofagasta,-20.942,-68.504,5,17.1,85.6
+4,Palomo,O'Higgins,-34.613,-70.302,7,12,84.2
+4,Cay,Aysén,-45.058,-72.988,8,10.3,82.4
+4,Llizán,Los Rios,-39.6,-71.7,4.5,16.9,76
+4,Palvitad,Los Lagos,-43.11,-72.75,7,10.8,75.4
+4,Ollagüe,Antofagasta,-21.306,-68.18,7,9.9,69.2
+4,Pali-Aike,Magallanes y Antártica Chilena,-52,-70.1,6.5,9.6,62.2
+4,Licancabur,Antofagasta,-22.834,-67.884,5,12,59.9
+4,Putana,Antofagasta,-22.557,-67.853,6,9.8,58.7
+4,Lastarria,Antofagasta,-25.168,-68.507,10.5,5.4,56.7
+4,Aucanquilcha,Antofagasta,-21.221,-68.469,4,13.5,53.8
+5,Escalante - Sairecabur,Antofagasta,-22.719,-67.891,5,9.9,49.7
+5,Aguilera,Magallanes y Antártica Chilena,-50.33,-73.75,8,5.8,46.3
+5,Fueguino o Cook,Magallanes y Antártica Chilena,-54.95,-70.25,7.5,5.2,39.2
+5,Chiliques,Antofagasta,-23.578,-67.701,3,13,39.1
+5,Isla Pingüino,Magallanes y Antártica Chilena,-62.1,-57.93,9.5,4,38
+5,Apacheta - Aguilucho,Antofagasta,-21.829,-68.202,4,8.5,34.2
+5,Isla Paulet,Magallanes y Antártica Chilena,-63.579,-55.78,8.5,4,34
+5,Nevado Tres Cruces,Atacama,-27.098,-68.778,4,8,31.9
+5,Puntas Negras,Antofagasta,-23.744,-67.54,3,9.9,29.6
+5,Acamarachi,Antofagasta,-23.292,-67.618,3,9.9,29.6
+5,Ojos del Salado,Atacama,-27.11,-68.541,4,7,27.9
+5,Llullaillaco,Antofagasta,-24.72,-68.537,6,4.4,26.4
+5,Cordón del Azufre,Antofagasta,-25.336,-68.522,6,3.4,20.4
+5,Cerro Bayo,Atacama,-25.414,-68.588,6,3.4,20.4
+5,Alítar,Antofagasta,-23.148,-67.655,2,8,16.1
+5,Orca,Magallanes y Antártica Chilena,-62.4,-58.4,7,2,14

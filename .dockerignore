@@ -1,0 +1,15 @@
+
+.git
+.gitignore
+.env
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+*.log
+ee-olivaresg-b7842843c247.json
+service_account.json

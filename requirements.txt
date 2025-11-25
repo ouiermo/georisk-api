@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+earthengine-api
+geemap
+pandas
+geopandas
+numpy
+python-dotenv
+pydantic-settings
