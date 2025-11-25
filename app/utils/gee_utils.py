@@ -5,14 +5,22 @@ from app.core.config import settings
 def init_gee():
     """Initializes Earth Engine."""
     try:
-        if os.path.exists(settings.GEE_SERVICE_ACCOUNT_KEY_FILE):
+        key_file = settings.GEE_SERVICE_ACCOUNT_KEY_FILE
+        if not os.path.exists(key_file):
+            # Check Render secret path fallback
+            render_secret = "/etc/secrets/service_account.json"
+            if os.path.exists(render_secret):
+                print(f"Using Render secret file at {render_secret}")
+                key_file = render_secret
+
+        if os.path.exists(key_file):
              import json
              try:
-                 with open(settings.GEE_SERVICE_ACCOUNT_KEY_FILE) as f:
+                 with open(key_file) as f:
                      key_content = json.load(f)
                  email = key_content.get('client_email')
                  if email:
-                     credentials = ee.ServiceAccountCredentials(email, settings.GEE_SERVICE_ACCOUNT_KEY_FILE)
+                     credentials = ee.ServiceAccountCredentials(email, key_file)
                      ee.Initialize(credentials)
                      print("Earth Engine initialized successfully with Service Account.")
                      return
