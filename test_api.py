@@ -1,7 +1,7 @@
 import requests
 import json
 
-url = "http://127.0.0.1:8000/api/v1/analyze"
+url = "https://georisk-api.onrender.com/api/v1/analyze"
 payload = {
     "lat": -33.4489,
     "lon": -70.6693,

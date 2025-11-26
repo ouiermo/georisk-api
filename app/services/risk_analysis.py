@@ -25,35 +25,47 @@ class PesosFactores:
     PESO_PENDIENTE: float = 0.40; PESO_FALLA_GEOLOGICA: float = 0.30
     PESO_LLUVIA_DETONANTE: float = 0.30
 
-def analizar_riesgo_deslizamiento_final(poi, umbrales=UmbralesRiesgo(), pesos=PesosFactores()):
+def get_riesgo_deslizamiento(poi, anio=2022, umbrales=UmbralesRiesgo()):
     try:
-        dem = ee.Image('USGS/SRTMGL1_003'); slope = ee.Terrain.slope(dem)
-        # Dynamic year handling could be added, defaulting to 2022 as in notebook for consistency or current year
-        año_analisis = 2022 
-        precip = ee.ImageCollection('UCSB-CHG/CHIRPS/PENTAD').filterDate(f'{año_analisis}-01-01', f'{año_analisis}-12-31').max()
-        vals = slope.addBands(precip).reduceRegion(ee.Reducer.first(), poi, 30).getInfo()
-        slope_val, precip_val = vals.get('slope', 0), vals.get('precipitation', 0)
-
-        path_fallas = os.path.join(settings.DATA_DIR, "deslizamiento_catastro_chile.csv")
-        df_fallas = pd.read_csv(path_fallas)
-        gdf_fallas = gpd.GeoDataFrame(df_fallas, geometry=gpd.points_from_xy(df_fallas.Longitud, df_fallas.Latitud), crs="EPSG:4326")
-        ee_fallas = geemap.geopandas_to_ee(gdf_fallas)
+        # 1. Elevación y Pendiente (SRTM)
+        dem = ee.Image('USGS/SRTMGL1_003')
+        slope = ee.Terrain.slope(dem)
         
-        def set_distance(f): return f.set('distance', poi.distance(f.geometry()))
-        dist_falla = ee_fallas.map(set_distance).sort('distance').first().get('distance').getInfo() if ee_fallas.size().getInfo() > 0 else float('inf')
-
-        f_pendiente = 1.0 if slope_val >= umbrales.PENDIENTE_CRITICA else (0.75 if slope_val >= umbrales.PENDIENTE_ALTA else (0.5 if slope_val >= umbrales.PENDIENTE_MODERADA else 0.25))
-        f_geologico = 1.0 if dist_falla < umbrales.DISTANCIA_FALLA_CRITICA else (0.6 if dist_falla < umbrales.DISTANCIA_FALLA_MODERADA else 0.3)
-        f_lluvia = 1.0 if precip_val > umbrales.LLUVIA_DETONANTE_ALTA else (0.6 if precip_val > umbrales.LLUVIA_DETONANTE_MODERADA else 0.2)
-
-        riesgo_ponderado = (f_pendiente * pesos.PESO_PENDIENTE + f_geologico * pesos.PESO_FALLA_GEOLOGICA + f_lluvia * pesos.PESO_LLUVIA_DETONANTE)
-        riesgo_final = riesgo_ponderado * 10
-        etiqueta = "Muy Alto" if riesgo_final >= 7.5 else ("Alto" if riesgo_final >= 5.0 else ("Moderado" if riesgo_final >= 2.5 else "Bajo"))
-
-        return {"riesgo_final": round(riesgo_final, 1), "etiqueta_riesgo": etiqueta, "factores": {"pendiente_grados": round(slope_val, 1), "distancia_falla_m": round(dist_falla) if dist_falla != float('inf') else 'N/A', "precip_max_5dias_mm": round(precip_val)}}
+        # 2. Lluvias (CHIRPS)
+        precip = ee.ImageCollection('UCSB-CHG/CHIRPS/PENTAD')\
+                   .filterDate(f'{anio}-01-01', f'{anio}-12-31').max()
+        
+        # Reducción de datos en el punto exacto
+        # Agregamos 'elevation' al reducer
+        combined = dem.rename('elevation').addBands(slope).addBands(precip)
+        
+        vals = combined.reduceRegion(
+            reducer=ee.Reducer.first(), geometry=poi, scale=30
+        ).getInfo()
+        
+        slope_val = vals.get('slope', 0) or 0
+        precip_val = vals.get('precipitation', 0) or 0
+        elev_val = vals.get('elevation', 0) or 0
+        
+        # Cálculo de Score
+        score = 0
+        if slope_val > umbrales.PENDIENTE_CRITICA: score += 5
+        elif slope_val > umbrales.PENDIENTE_ALTA: score += 3
+        if precip_val > umbrales.LLUVIA_DETONANTE_ALTA: score += 3
+        
+        final_score = min(score, 10)
+        
+        return {
+            "score": final_score,
+            "datos_tecnicos": {
+                "Pendiente": f"{slope_val:.1f}°",  # DATO REAL
+                "Cota": f"{int(elev_val)} m.s.n.m", # DATO REAL
+                "Lluvia Máx": f"{int(precip_val)} mm" # DATO REAL
+            }
+        }
     except Exception as e:
         logger.error(f"Error en deslizamiento: {e}")
-        return {"riesgo_final": -1, "etiqueta_riesgo": "Error"}
+        return {"score": 0, "datos_tecnicos": {"Error": "Sin datos"}, "error": str(e)}
 
 def analizar_riesgo_inundacion_robusto(poi):
     try:
@@ -74,37 +86,41 @@ def analizar_riesgo_inundacion_robusto(poi):
         logging.error(f"Error en análisis de inundación: {e}")
         return -1
 
-def analizar_riesgo_incendio_con_ndvi(poi):
+def get_riesgo_incendio_clima(poi, anio=2022):
     try:
-        def dms_to_decimal(dms):
-            if not isinstance(dms, str): return None
-            parts = re.match(r"(\d+)°(\d+)'([\d.]+)\" ([NSOEW])", dms.strip())
-            if not parts: return None
-            deg, m, s, compass = parts.groups()
-            dec = float(deg) + float(m)/60 + float(s)/3600
-            return -dec if compass in ['S', 'O', 'W'] else dec
-            
-        path_incendios = os.path.join(settings.DATA_DIR, "R_INCENDIOS.csv")
-        df_inc = pd.read_csv(path_incendios, delimiter=',').dropna()
-        df_inc.columns = df_inc.columns.str.strip()
-        df_inc['lat'], df_inc['lon'] = df_inc['LATITUD'].apply(dms_to_decimal), df_inc['LONGITUD'].apply(dms_to_decimal)
-        gdf_inc = gpd.GeoDataFrame(df_inc.dropna(subset=['lat', 'lon']), geometry=gpd.points_from_xy(df_inc.lon, df_inc.lat), crs="EPSG:4326")
-        ee_incendios = geemap.geopandas_to_ee(gdf_inc)
+        # 1. NDVI (Vegetación)
+        s2 = ee.ImageCollection('COPERNICUS/S2_SR_HARMONIZED')\
+               .filterDate(f'{anio}-01-01', f'{anio}-03-30')\
+               .filterBounds(poi)\
+               .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20))\
+               .median()
+        ndvi = s2.normalizedDifference(['B8', 'B4']).rename('NDVI')
         
-        riesgo_historico = 1 if ee_incendios.filterBounds(poi.buffer(50000)).filter(ee.Filter.gt('SUPERFICIE', 200)).size().getInfo() > 0 else 0
-        año = 2022
-        precip = ee.ImageCollection('UCSB-CHG/CHIRPS/PENTAD').filterDate(f'{año}-01-01', f'{año}-12-31').mean()
-        temp = ee.ImageCollection("MODIS/061/MOD11A1").filterDate(f'{año}-01-01', f'{año}-12-31').select('LST_Day_1km').mean().multiply(0.02)
-        sentinel_collection = (ee.ImageCollection('COPERNICUS/S2_SR_HARMONIZED').filterDate(f'{año-1}-12-01', f'{año}-02-28').filterBounds(poi).filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20)))
-        ndvi = sentinel_collection.median().normalizedDifference(['B8', 'B4']).rename('NDVI')
-        vals = precip.addBands(temp).addBands(ndvi).reduceRegion(ee.Reducer.first(), poi, 30).getInfo()
-        riesgo_ambiental = 0
-        if vals.get('precipitation', 10) < 5: riesgo_ambiental += 1
-        if vals.get('LST_Day_1km', 0) > 303.15: riesgo_ambiental += 1
-        ndvi_val = vals.get('NDVI')
-        if ndvi_val is not None and ndvi_val < 0.3: riesgo_ambiental += 1
-        return riesgo_historico + riesgo_ambiental
-    except Exception: return -1
+        # 2. Temperatura Suelo (MODIS)
+        temp = ee.ImageCollection("MODIS/061/MOD11A1")\
+                 .filterDate(f'{anio}-01-01', f'{anio}-03-30')\
+                 .select('LST_Day_1km').mean().multiply(0.02).subtract(273.15)
+        
+        vals = ndvi.addBands(temp).reduceRegion(ee.Reducer.first(), poi, 30).getInfo()
+        
+        ndvi_val = vals.get('NDVI', 0) or 0
+        temp_val = vals.get('LST_Day_1km', 0) or 0
+        
+        riesgo = 0
+        if ndvi_val < 0.3: riesgo += 1
+        if temp_val > 30: riesgo += 1
+        
+        return {
+            "riesgo_index": riesgo,
+            "datos_tecnicos": {
+                "NDVI": f"{ndvi_val:.2f}", # DATO REAL
+                "Temp. Suelo": f"{temp_val:.1f}°C", # DATO REAL
+                "Vegetación": "Baja" if ndvi_val < 0.3 else "Media/Alta" # INFERENCIA REAL
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error en incendio: {e}")
+        return {"riesgo_index": 0, "datos_tecnicos": {"Error": "Sin datos"}, "error": str(e)}
 
 def analizar_riesgo_volcanico(poi):
     try:
@@ -147,13 +163,14 @@ def generar_certificado(lat, lon, nombre="Ubicación Solicitada"):
     poi = ee.Geometry.Point(lon, lat)
     
     # Execute analyses
-    riesgo_deslizamiento = analizar_riesgo_deslizamiento_final(poi)
+    riesgo_deslizamiento = get_riesgo_deslizamiento(poi)
     riesgo_inundacion = analizar_riesgo_inundacion_robusto(poi)
-    riesgo_incendio = analizar_riesgo_incendio_con_ndvi(poi)
+    riesgo_incendio = get_riesgo_incendio_clima(poi)
     riesgo_volcanico = analizar_riesgo_volcanico(poi)
     clima = analizar_clima_temperaturas(poi)
     
     # Build DataFrame-like structure for the autofact logic
+    # Note: Some keys might be missing if we strictly follow the new structure, but we adapt below.
     row = {
         'nombre': nombre,
         'latitud': lat,
@@ -170,7 +187,7 @@ def generar_certificado(lat, lon, nombre="Ubicación Solicitada"):
     penalizacion_score = 0
 
     # A. Suelo
-    val_deslizamiento = riesgo_deslizamiento.get('riesgo_final', 0)
+    val_deslizamiento = riesgo_deslizamiento.get('score', 0)
     if val_deslizamiento >= 5.0:
         estado_suelo = {"color": "red", "texto": "Riesgo Alto", "mensaje": "Pendiente crítica inestable."}
         penalizacion_score += 40
@@ -182,11 +199,11 @@ def generar_certificado(lat, lon, nombre="Ubicación Solicitada"):
 
     indicadores.append({
         "id": "suelo",
-        "titulo": "Estabilidad de Suelo",
-        "score_tecnico": val_deslizamiento,
+        "titulo": "Estabilidad Geotécnica",
         "estado": estado_suelo["texto"],
-        "color_ui": estado_suelo["color"],
-        "mensaje_cliente": estado_suelo["mensaje"]
+        "color": estado_suelo["color"],
+        "mensaje": estado_suelo["mensaje"],
+        "detalles": riesgo_deslizamiento.get('datos_tecnicos', {})
     })
 
     # B. Agua
@@ -210,7 +227,7 @@ def generar_certificado(lat, lon, nombre="Ubicación Solicitada"):
     })
 
     # C. Fuego
-    val_incendio = riesgo_incendio
+    val_incendio = riesgo_incendio.get('riesgo_index', 0)
     tendencia_temp = row.get('Tendencia_Max', 0)
     if val_incendio > 0 or tendencia_temp >= 2:
         estado_fuego = {"color": "yellow", "texto": "Alerta Ambiental", "mensaje": "Tendencia de calentamiento o sequedad detectada."}
@@ -220,11 +237,11 @@ def generar_certificado(lat, lon, nombre="Ubicación Solicitada"):
 
     indicadores.append({
         "id": "fuego",
-        "titulo": "Incendio y Clima",
-        "score_tecnico": f"Index: {val_incendio} | Trend: {tendencia_temp}",
+        "titulo": "Amenaza Incendio",
         "estado": estado_fuego["texto"],
-        "color_ui": estado_fuego["color"],
-        "mensaje_cliente": estado_fuego["mensaje"]
+        "color": estado_fuego["color"],
+        "mensaje": estado_fuego["mensaje"],
+        "detalles": riesgo_incendio.get('datos_tecnicos', {})
     })
 
     score_final = max(0, 100 - penalizacion_score)
